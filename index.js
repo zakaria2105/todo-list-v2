@@ -20,10 +20,12 @@ connection.connect(function (err) {
 let server = http.createServer((req, res) => {
     console.log('server started');
     let request = req.url.split("/")
+    let todo = url.parse(req.url, true).query;
+    let id = todo.id
     switch (req.method) {
         case 'GET':
             if (req.url === '/' || req.url === '/projects') {
-                query = `SELECT * FROM project`
+                query = `SELECT * FROM projects`
                 connection.query(query, (err, rows) => {
                     if (err) throw err;
                     res.end(JSON.stringify(rows))
@@ -35,10 +37,8 @@ let server = http.createServer((req, res) => {
                     res.end(JSON.stringify(rows))
                 });
             } else {
-                let todo = url.parse(req.url, true).query;
-                let id = todo.id
                 if (request[1] == 'project' && id) {
-                    query = `SELECT * FROM project WHERE id = '${id}'`
+                    query = `SELECT * FROM projects WHERE id = '${id}'`
                     connection.query(query, (err, rows) => {
                         if (err) throw err;
                         res.end(JSON.stringify(rows))
@@ -82,9 +82,17 @@ let server = http.createServer((req, res) => {
                 query = `DELETE FROM ${table}`
                 connection.query(query, (err) => {
                     if (err) throw err;
+                    res.end('All rows deleted')
+                })
+            }else if ((request[1] == 'project' || request[1] == 'task') && id) {
+                let table = request[1]
+                query = `DELETE FROM ${table}s WHERE id = ${id}`
+                connection.query(query, (err) => {
+                    if (err) throw err;
                     res.end('row deleted')
                 })
-            } else {
+            }
+             else {
                 res.end('route does not exist')
             }
             break;
