@@ -55,7 +55,21 @@ let server = http.createServer((req, res) => {
             }
             break;
         case 'POST':
-            
+            if (req.url === '/project' || req.url === '/task') {
+                let body = "";
+                req.on("data", (chunk) => {
+                    body += chunk;
+                });
+                req.on("end", () => {
+                    res.writeHead(200, { "content-type": "application/json" })
+                    let project = JSON.parse(body)
+                    query = `INSERT INTO project SET ?`
+                    connection.query(query, project, (err, res) => {
+                        if (err) throw err;
+                        res.end('row inserted')
+                    })
+                });
+            }
             break;
         case 'PUT':
 
