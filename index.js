@@ -75,6 +75,39 @@ let server = http.createServer((req, res) => {
             }
             break;
         case 'PUT':
+            if (request[1] === 'task' && id) {
+                let body = "";
+                req.on("data", (chunk) => {
+                    body += chunk;
+                });
+                req.on("end", () => {
+                    // res.writeHead(200, { "content-type": "application/json" })
+                    let project = JSON.parse(body)
+                    query = "UPDATE tasks SET ? WHERE id = ?"
+                    connection.query(query, [project, id], (err) => {
+                        if (err) throw err;
+                        res.end('row updated')
+                    })
+                    console.log(project.title);
+                });
+            } else if (request[1] === 'project' && id) {
+                let body = "";
+                req.on("data", (chunk) => {
+                    body += chunk;
+                });
+                req.on("end", () => {
+                    // res.writeHead(200, { "content-type": "application/json" })
+                    let project = JSON.parse(body)
+                    query = "UPDATE projects SET ? WHERE id = ?"
+                    connection.query(query, [project, id], (err) => {
+                        if (err) throw err;
+                        res.end('row updated')
+                    })
+                    console.log(project.title);
+                });
+            }else{
+                res.end('route does not exist')
+            }
             break;
         case 'DELETE':
             if ((request[1] == 'projects' || request[1] == 'tasks') && !request[2]) {
@@ -84,7 +117,7 @@ let server = http.createServer((req, res) => {
                     if (err) throw err;
                     res.end('All rows deleted')
                 })
-            }else if ((request[1] == 'project' || request[1] == 'task') && id) {
+            } else if ((request[1] == 'project' || request[1] == 'task') && id) {
                 let table = request[1]
                 query = `DELETE FROM ${table}s WHERE id = ${id}`
                 connection.query(query, (err) => {
@@ -92,7 +125,7 @@ let server = http.createServer((req, res) => {
                     res.end('row deleted')
                 })
             }
-             else {
+            else {
                 res.end('route does not exist')
             }
             break;
