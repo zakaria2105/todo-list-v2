@@ -55,7 +55,7 @@ let server = http.createServer((req, res) => {
             }
             break;
         case 'POST':
-            if (req.url === '/project' || req.url === '/task') {
+            if ((request[1] == 'projects' || request[1] == 'tasks') && !request[2]) {
                 let body = "";
                 req.on("data", (chunk) => {
                     body += chunk;
@@ -63,19 +63,30 @@ let server = http.createServer((req, res) => {
                 req.on("end", () => {
                     res.writeHead(200, { "content-type": "application/json" })
                     let project = JSON.parse(body)
-                    query = `INSERT INTO project SET ?`
-                    connection.query(query, project, (err, res) => {
+                    let table = request[1]
+                    query = `INSERT INTO ${table} SET ?`
+                    connection.query(query, project, (err) => {
                         if (err) throw err;
                         res.end('row inserted')
                     })
                 });
+            } else {
+                res.end('route does not exist')
             }
             break;
         case 'PUT':
-
             break;
         case 'DELETE':
-
+            if ((request[1] == 'projects' || request[1] == 'tasks') && !request[2]) {
+                let table = request[1]
+                query = `DELETE FROM ${table}`
+                connection.query(query, (err) => {
+                    if (err) throw err;
+                    res.end('row deleted')
+                })
+            } else {
+                res.end('route does not exist')
+            }
             break;
 
         default:
