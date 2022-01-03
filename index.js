@@ -21,7 +21,7 @@ let server = http.createServer((req, res) => {
     console.log('server started');
     let request = req.url.split("/")
     let todo = url.parse(req.url, true).query;
-    let id = todo.id
+    let id = parseInt(todo.id)
     switch (req.method) {
         case 'GET':
             if (req.url === '/' || req.url === '/projects') {
@@ -37,13 +37,13 @@ let server = http.createServer((req, res) => {
                     res.end(JSON.stringify(rows))
                 });
             } else {
-                if (request[1] == 'project' && id) {
+                if (request[1] == 'project' && Number.isInteger(id)) {
                     query = `SELECT * FROM projects WHERE id = '${id}'`
                     connection.query(query, (err, rows) => {
                         if (err) throw err;
                         res.end(JSON.stringify(rows))
                     });
-                } else if (request[1] == 'task' && id) {
+                } else if (request[1] == 'task' && Number.isInteger(id)) {
                     query = `SELECT * FROM tasks WHERE id = '${id}'`
                     connection.query(query, (err, rows) => {
                         if (err) throw err;
@@ -75,37 +75,33 @@ let server = http.createServer((req, res) => {
             }
             break;
         case 'PUT':
-            if (request[1] === 'task' && id) {
+            if (request[1] === 'task' && Number.isInteger(id)) {
                 let body = "";
                 req.on("data", (chunk) => {
                     body += chunk;
                 });
                 req.on("end", () => {
-                    // res.writeHead(200, { "content-type": "application/json" })
                     let project = JSON.parse(body)
                     query = "UPDATE tasks SET ? WHERE id = ?"
                     connection.query(query, [project, id], (err) => {
                         if (err) throw err;
                         res.end('row updated')
                     })
-                    console.log(project.title);
                 });
-            } else if (request[1] === 'project' && id) {
+            } else if (request[1] === 'project' && Number.isInteger(id)) {
                 let body = "";
                 req.on("data", (chunk) => {
                     body += chunk;
                 });
                 req.on("end", () => {
-                    // res.writeHead(200, { "content-type": "application/json" })
                     let project = JSON.parse(body)
                     query = "UPDATE projects SET ? WHERE id = ?"
                     connection.query(query, [project, id], (err) => {
                         if (err) throw err;
                         res.end('row updated')
                     })
-                    console.log(project.title);
                 });
-            }else{
+            } else {
                 res.end('route does not exist')
             }
             break;
@@ -117,7 +113,7 @@ let server = http.createServer((req, res) => {
                     if (err) throw err;
                     res.end('All rows deleted')
                 })
-            } else if ((request[1] == 'project' || request[1] == 'task') && id) {
+            } else if ((request[1] == 'project' || request[1] == 'task') && Number.isInteger(id)) {
                 let table = request[1]
                 query = `DELETE FROM ${table}s WHERE id = ${id}`
                 connection.query(query, (err) => {
@@ -131,6 +127,7 @@ let server = http.createServer((req, res) => {
             break;
 
         default:
+            res.end('route not found')
             break;
     }
 })
